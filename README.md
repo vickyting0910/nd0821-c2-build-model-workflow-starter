@@ -8,7 +8,8 @@ The Weights & Biases project is under https://wandb.ai/vickyliau/nyc_airbnb?work
 ![alt text](https://github.com/vickyting0910/nd0821-c2-build-model-workflow-starter/blob/master/images/pipeline.JPG)
 
 ## Hyperparameter Tuning
-![alt text](https://github.com/vickyting0910/nd0821-c2-build-model-workflow-starter/blob/master/images/MAE_dataset1.JPG)
+![alt text](https://github.com/vickyting0910/nd0821-c2-build-model-workflow-starter/blob/master/images/MAE_dataset1_training.JPG)
+![alt text](https://github.com/vickyting0910/nd0821-c2-build-model-workflow-starter/blob/master/images/MAE_dataset1_testing.JPG)
 
 ## Furture Extensions for future release
 ### Test with different models, such gradient boosting model: 

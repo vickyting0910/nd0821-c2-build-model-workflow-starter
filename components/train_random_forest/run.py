@@ -55,14 +55,14 @@ def go(args):
     sk_pipe.fit(X_train[used_columns], y_train)
 
     # Evaluate
-    pred = sk_pipe.predict(X_val[used_columns])
+    pred = sk_pipe.predict(X_train[used_columns])
 
     logger.info("Scoring")
     # AUC
     #score = roc_auc_score(y_val, pred_proba, average="macro", multi_class="ovo")
 
     # MAE
-    n_scores = metrics.mean_absolute_error(y_val,pred)
+    n_scores = metrics.mean_absolute_error(y_train,pred)
     run.summary["MAE"] = n_scores
 
     # Export if required
