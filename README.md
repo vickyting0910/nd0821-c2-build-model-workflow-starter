@@ -19,4 +19,9 @@ Instead of reducing variances, reducing bias may work better.
 
 ### Apply more data cleaning steps, such as more imputation methods
 
+## Refereences
+The code is revised from two sources:
+1. nd0821-c2-build-model-workflow-exercises/ https://github.com/udacity/nd0821-c2-build-model-workflow-exercises
+
+2. nd0821-c2-build-model-workflow-starter/ https://github.com/udacity/nd0821-c2-build-model-workflow-starter
 
