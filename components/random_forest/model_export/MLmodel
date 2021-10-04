@@ -19,4 +19,4 @@ signature:
     "type": "long"}, {"name": "reviews_per_month", "type": "double"}, {"name": "neighbourhood_group",
     "type": "string"}, {"name": "room_type", "type": "string"}]'
   outputs: '[{"type": "tensor", "tensor-spec": {"dtype": "float64", "shape": [-1]}}]'
-utc_time_created: '2021-10-04 00:59:34.590937'
+utc_time_created: '2021-10-04 02:06:46.370123'
