@@ -2,8 +2,6 @@
 
 This project builds the ML pipeline for bettter prediction accuracy using random forest model. This pipeline is built by Weights & Biases (wandb). 
 
-The Weights & Biases project is under https://wandb.ai/vickyliau/nyc_airbnb?workspace=user-vickyliau
-
 ## ML pipeline:
 ![alt text](https://github.com/vickyting0910/nd0821-c2-build-model-workflow-starter/blob/master/images/pipeline.JPG)
 
