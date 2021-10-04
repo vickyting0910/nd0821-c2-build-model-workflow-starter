@@ -155,7 +155,6 @@ def get_training_inference_pipeline(args):
     # We need 3 separate preprocessing "tracks":
     # - one for categorical features
     # - one for numerical features
-    # - one for textual ("nlp") features
     # Categorical preprocessing pipeline
     categorical_features = sorted(model_config["features"]["categorical"])
     non_ordinal_categorical_preproc = make_pipeline(
