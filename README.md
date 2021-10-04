@@ -7,6 +7,14 @@ The Weights & Biases project is under https://wandb.ai/vickyliau/nyc_airbnb?work
 ## ML pipeline:
 ![alt text](https://github.com/vickyting0910/nd0821-c2-build-model-workflow-starter/blob/master/images/pipeline.JPG)
 
+## Data Cleaning:
+1. test_column_presence_and_type
+2. test_class_names
+3. test_column_ranges
+4. test_kolmogorov_smirnov
+5. test_row_count
+6. test_price_range
+
 ## MAE of Hyperparameter Tuning
 ### Training
 ![alt text](https://github.com/vickyting0910/nd0821-c2-build-model-workflow-starter/blob/master/images/MAE_dataset1_training.JPG)
