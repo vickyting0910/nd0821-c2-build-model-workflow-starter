@@ -21,5 +21,13 @@ entry_points:
       artifact_description:
         description: A brief description of the output artifact
         type: string
+      
+      min_price:
+        description: Minimum Price Value
+        type: integer
 
-    command: "python run.py {input_artifact} {artifact_name} {artifact_type} {artifact_description}"
+      max_price:
+        description: Maximum Price Value
+        type: integer
+
+    command: "python run.py {input_artifact} {artifact_name} {artifact_type} {artifact_description} {min_price} {max_price}"

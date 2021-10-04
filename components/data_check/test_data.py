@@ -1,6 +1,6 @@
 import scipy.stats
 import pandas as pd
-
+import numpy as np
 
 def test_column_presence_and_type(data):
 
@@ -9,7 +9,8 @@ def test_column_presence_and_type(data):
 
     required_columns = {
         "latitude": pd.api.types.is_float_dtype,
-        "longitude": pd.api.types.is_float_dtype
+        "longitude": pd.api.types.is_float_dtype,
+        "price": pd.api.types.is_integer_dtype
     }
 
     # Check column presence
@@ -60,8 +61,7 @@ def test_kolmogorov_smirnov(data, ks_alpha):
     sample1, sample2 = data
 
     columns = [
-        "latitude",
-        "longitude"
+        "price"
     ]
 
     # Bonferroni correction for multiple hypothesis testing
@@ -77,4 +77,20 @@ def test_kolmogorov_smirnov(data, ks_alpha):
         # obtaining a test statistic (TS) equal or more extreme that the one we got
         # by chance, when the null hypothesis is true. If this probability is not
         # large enough, this dataset should be looked at carefully, hence we fail
-        assert p_value > alpha_prime
+        assert p_value < alpha_prime
+
+def test_row_count(data: pd.DataFrame):
+    """
+    Test row count before and after processing
+    """
+    sample1, sample2 = data
+    assert sample1.shape[0] != sample2.shape[0]
+
+def test_price_range(data: pd.DataFrame, min_price, max_price):
+    """
+    Test the range of price
+    """
+    data, _ = data
+    idx = data['price'].between(min_price, max_price)
+    assert np.sum(~idx) == 0
+

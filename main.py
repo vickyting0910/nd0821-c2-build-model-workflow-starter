@@ -45,8 +45,8 @@ def go(config: DictConfig):
                 "main",
                 parameters={
                     "sample": config["etl"]["sample"],
-                    "artifact_name": "raw_data.csv",
-                    "artifact_type": "raw_data",
+                    "artifact_name": "sample.csv",
+                    "artifact_type": "sample",
                     "artifact_description": "Raw file as downloaded"
                 },
             )
@@ -56,10 +56,12 @@ def go(config: DictConfig):
 	    os.path.join(root_path, "components/basic_cleaning"),
             "main",
             parameters={
-                "input_artifact": "raw_data.csv:latest",
-                "artifact_name": "preprocessed_data.csv",
-                "artifact_type": "preprocessed_data",
-                "artifact_description": "Data with preprocessing applied"
+                "input_artifact": "sample.csv:latest",
+                "artifact_name": "clean_data.csv",
+                "artifact_type": "clean_data",
+                "artifact_description": "Data with preprocessing applied",
+		"min_price": config['data_check']['min_price'],
+                "max_price": config['data_check']['max_price']
             },
         )
 
@@ -68,9 +70,11 @@ def go(config: DictConfig):
             os.path.join(root_path, "components/data_check"),
             "main",
             parameters={
-                "reference_artifact": "preprocessed_data.csv:latest",
-                "sample_artifact": "preprocessed_data.csv:latest",
-                "ks_alpha": config["data_check"]["kl_threshold"]
+                "reference_artifact": "clean_data.csv:latest",
+                "sample_artifact": "sample.csv:latest",
+                "ks_alpha": config["data_check"]["kl_threshold"],
+		"min_price": config['data_check']['min_price'],
+                "max_price": config['data_check']['max_price'],
             },
         )
 
@@ -79,7 +83,7 @@ def go(config: DictConfig):
             os.path.join(root_path, "components/data_split"),
             "main",
             parameters={
-                "input_artifact": "preprocessed_data.csv:latest",
+                "input_artifact": "clean_data.csv:latest",
                 "artifact_root": "data",
                 "artifact_type": "segregated_data",
                 "test_size": config["modeling"]["test_size"],
@@ -108,8 +112,6 @@ def go(config: DictConfig):
                 "stratify": config["modeling"]["stratify_by"]
             },
         )
-
-            pass
 
         if "test_regression_model" in active_steps:
 

@@ -11,16 +11,17 @@ import pandas as pd
 import numpy as np
 from mlflow.models import infer_signature
 from sklearn.compose import ColumnTransformer
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import roc_auc_score, plot_confusion_matrix
+from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OrdinalEncoder, StandardScaler, FunctionTransformer
+from sklearn.preprocessing import OrdinalEncoder, OneHotEncoder, StandardScaler, FunctionTransformer
 import matplotlib.pyplot as plt
 import wandb
 from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn.impute import SimpleImputer
-
+from sklearn import metrics
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)-15s %(message)s")
 logger = logging.getLogger()
@@ -35,7 +36,7 @@ def go(args):
     # Extract the target from the features
     logger.info("Extracting target from dataframe")
     X = df.copy()
-    y = X.pop("neighbourhood_group")
+    y = X.pop("price")
 
     logger.info("Splitting train/val")
     X_train, X_val, y_train, y_val = train_test_split(
@@ -48,50 +49,47 @@ def go(args):
 
     logger.info("Setting up pipeline")
 
-    pipe, used_columns = get_training_inference_pipeline(args)
+    sk_pipe, used_columns = get_training_inference_pipeline(args)
 
     logger.info("Fitting")
-    pipe.fit(X_train[used_columns], y_train)
+    sk_pipe.fit(X_train[used_columns], y_train)
 
     # Evaluate
-    pred = pipe.predict(X_val[used_columns])
-    pred_proba = pipe.predict_proba(X_val[used_columns])
+    pred = sk_pipe.predict(X_val[used_columns])
 
     logger.info("Scoring")
-    score = roc_auc_score(y_val, pred_proba, average="macro", multi_class="ovo")
-    
-    run.summary["AUC"] = score
+    # AUC
+    #score = roc_auc_score(y_val, pred_proba, average="macro", multi_class="ovo")
+
+    # MAE
+    n_scores = metrics.mean_absolute_error(y_val,pred)
+    run.summary["MAE"] = n_scores
 
     # Export if required
-    logger.info("Next")
+    logger.info("Export")
     if args.export_artifact != "null":
 
-        export_model(run, pipe, used_columns, X_val, pred, args.export_artifact)
+        export_model(run, sk_pipe, used_columns, X_val, pred, args.export_artifact)
     
     # Some useful plots
-    logger.info("Next1")
-    fig_feat_imp = plot_feature_importance(pipe)
+    logger.info("plot")
+    fig_feat_imp = plot_feature_importance(sk_pipe)
     
     fig_cm, sub_cm = plt.subplots(figsize=(10, 10))
-    plot_confusion_matrix(
-        pipe,
-        X_val[used_columns],
-        y_val,
-        ax=sub_cm,
-        normalize="true",
-        values_format=".1f",
-        xticks_rotation=90,
-    )
+
+    sub_cm.boxplot(n_scores)
+    sub_cm.plot(1, np.mean(n_scores), '-ro',color='red', label='mean_absolute_error')
+    #sub_cm.set_ylim([37.5,38.5])
     fig_cm.tight_layout()
-    logger.info("Next2")
+    logger.info("plot log")
     run.log(
         {
             "feature_importance": wandb.Image(fig_feat_imp),
-            "confusion_matrix": wandb.Image(fig_cm),
+            "mean_absolute_error": wandb.Image(fig_cm),
         }
     )
 
-def export_model(run, pipe, used_columns, X_val, val_pred, export_artifact):
+def export_model(run, sk_pipe, used_columns, X_val, val_pred, export_artifact):
 
     # Infer the signature of the model
 
@@ -102,7 +100,7 @@ def export_model(run, pipe, used_columns, X_val, val_pred, export_artifact):
         export_path = os.path.join("model_export")
 
         mlflow.sklearn.save_model(
-            pipe,
+            sk_pipe,
             export_path,
             serialization_format=mlflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE,
             signature=signature,
@@ -123,17 +121,17 @@ def export_model(run, pipe, used_columns, X_val, val_pred, export_artifact):
         artifact.wait()
 
 
-def plot_feature_importance(pipe):
+def plot_feature_importance(sk_pipe):
 
     # We collect the feature importance for all non-nlp features first
     feat_names = np.array(
-        pipe["preprocessor"].transformers[0][-1]
-        + pipe["preprocessor"].transformers[1][-1]
+        sk_pipe["preprocessor"].transformers[0][-1]
+        + sk_pipe["preprocessor"].transformers[1][-1]
     )
-    feat_imp = pipe["classifier"].feature_importances_[: len(feat_names)]
+    feat_imp = sk_pipe["classifier"].feature_importances_[: len(feat_names)]
     # For the NLP feature we sum across all the TF-IDF dimensions into a global
     # NLP importance
-    nlp_importance = sum(pipe["classifier"].feature_importances_[len(feat_names) :])
+    nlp_importance = sum(sk_pipe["classifier"].feature_importances_[len(feat_names) :])
     feat_imp = np.append(feat_imp, nlp_importance)
     feat_names = np.append(feat_names, "title + song_name")
     fig_feat_imp, sub_feat_imp = plt.subplots(figsize=(10, 10))
@@ -160,8 +158,8 @@ def get_training_inference_pipeline(args):
     # - one for textual ("nlp") features
     # Categorical preprocessing pipeline
     categorical_features = sorted(model_config["features"]["categorical"])
-    categorical_transformer = make_pipeline(
-        SimpleImputer(strategy="constant", fill_value=0), OrdinalEncoder()
+    non_ordinal_categorical_preproc = make_pipeline(
+        SimpleImputer(strategy="constant", fill_value=0), OneHotEncoder()
     )
     # Numerical preprocessing pipeline
     numeric_features = sorted(model_config["features"]["numerical"])
@@ -174,7 +172,7 @@ def get_training_inference_pipeline(args):
     preprocessor = ColumnTransformer(
         transformers=[
             ("num", numeric_transformer, numeric_features),
-            ("cat", categorical_transformer, categorical_features) 
+            ("cat", non_ordinal_categorical_preproc, categorical_features) 
         ],
         remainder="drop",  # This drops the columns that we do not transform
     )
@@ -184,13 +182,13 @@ def get_training_inference_pipeline(args):
 
     # Append classifier to preprocessing pipeline.
     # Now we have a full prediction pipeline.
-    pipe = Pipeline(
+    sk_pipe = Pipeline(
         steps=[
             ("preprocessor", preprocessor),
-            ("classifier", RandomForestClassifier(**model_config["random_forest"])),
+            ("classifier", RandomForestRegressor(**model_config["random_forest"])),
         ]
     )
-    return pipe, used_columns
+    return sk_pipe, used_columns
 
 
 if __name__ == "__main__":

@@ -34,10 +34,10 @@ def go(args):
     df['name'].fillna(value='', inplace=True)
     df['host_name'].fillna(value='', inplace=True)
     df['text_feature'] = df['name'] + ' ' + df['host_name']
-    df=df.fillna(0)
+    df=df.fillna(0.0).replace('',0.0)
     # Drop outliers
-    min_price = 10
-    max_price = 350
+    min_price = float(args.min_price)
+    max_price = float(args.max_price)
     idx = df['price'].between(min_price, max_price)
     df = df[idx].copy()
     # Convert last_review to datetime
@@ -69,6 +69,10 @@ if __name__ == "__main__":
     parser.add_argument(
         "artifact_description", type=str, help="A brief description of this artifact"
     )
+
+    parser.add_argument("min_price", type=str, help="min price threshold")
+
+    parser.add_argument("max_price", type=str, help="max price threshold")
 
     args = parser.parse_args()
 
