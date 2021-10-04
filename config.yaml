@@ -2,11 +2,11 @@ main:
   components_repository: "https://github.com/udacity/nd0821-c2-build-model-workflow-starter.git#components"
   # All the intermediate files will be copied to this directory at the end of the run.
   # Set this to null if you are running in prod
-  project_name: nyc_airbnb
+  project_name: nyc_airbnb_updated
   experiment_name: development
   steps: all
 etl:
-  sample: "sample2.csv"
+  sample: "sample1.csv"
 data_check:
   kl_threshold: 0.2
   min_price: 10  # dollars
@@ -17,7 +17,7 @@ modeling:
   # Fraction of remaining data to use for validation
   val_size: 0.2
   # Fix this for reproducibility, change to have new splits
-  random_seed: 42
+  random_seed: 40
   # Column to use for stratification (use "none" for no stratification)
   stratify_by: "neighbourhood_group"
   # Maximum number of features to consider for the TFIDF applied to the title of the

@@ -11,8 +11,9 @@ _steps = [
     "download",
     "basic_cleaning",
     "data_check",
-    "data_split",
+    "train_val_test_split",
     "train_random_forest",
+    "test_regression_model"
     # NOTE: We do not include this in the steps so it is not run by mistake.
     # You first need to promote a model export to "prod" before you can run this,
     # then you need to run this step explicitly
@@ -78,9 +79,9 @@ def go(config: DictConfig):
             },
         )
 
-        if "data_split" in active_steps:
+        if "train_val_test_split" in active_steps:
             _ = mlflow.run(
-            os.path.join(root_path, "components/data_split"),
+            os.path.join(root_path, "components/train_val_test_split"),
             "main",
             parameters={
                 "input_artifact": "clean_data.csv:latest",
@@ -101,7 +102,7 @@ def go(config: DictConfig):
             # NOTE: use the rf_config we just created as the rf_config parameter for the train_random_forest
             # step
             _ = mlflow.run(
-            os.path.join(root_path, "components/random_forest"),
+            os.path.join(root_path, "components/train_random_forest"),
             "main",
             parameters={
                 "train_data": "data_train.csv:latest",
@@ -116,10 +117,10 @@ def go(config: DictConfig):
         if "test_regression_model" in active_steps:
 
             _ = mlflow.run(
-            os.path.join(root_path, "components/validation"),
+            os.path.join(root_path, "components/test_regression_model"),
             "main",
             parameters={
-                "model_export": f"{config['random_forest_pipeline']['export_artifact']}:latest",
+                "model_export": f"{config['modeling']['export_artifact']}:latest",
                 "test_data": "data_test.csv:latest"
             },
         )
