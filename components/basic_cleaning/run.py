@@ -35,11 +35,16 @@ def go(args):
     df['host_name'].fillna(value='', inplace=True)
     df['text_feature'] = df['name'] + ' ' + df['host_name']
     df=df.fillna(0.0).replace('',0.0)
-    # Drop outliers
+    # Drop outliers of price
     min_price = float(args.min_price)
     max_price = float(args.max_price)
     idx = df['price'].between(min_price, max_price)
     df = df[idx].copy()
+    
+    # Drop outliers of longitude & latitude
+    idx = df['longitude'].between(-74.25, -73.50) & df['latitude'].between(40.5, 41.2)
+    df = df[idx].copy()
+
     # Convert last_review to datetime
     df['last_review'] = pd.to_datetime(df['last_review'])
 

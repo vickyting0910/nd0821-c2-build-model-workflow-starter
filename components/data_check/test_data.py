@@ -44,8 +44,8 @@ def test_column_ranges(data):
     _, data = data
 
     ranges = {
-        "latitude": (40, 41),
-        "longitude": (-75, -73)
+        "latitude": (40.5, 41.2),
+        "longitude": (-74.25, -73.50)
     }
 
     for col_name, (minimum, maximum) in ranges.items():

@@ -120,7 +120,7 @@ def go(config: DictConfig):
             os.path.join(root_path, "components/test_regression_model"),
             "main",
             parameters={
-                "model_export": f"{config['modeling']['export_artifact']}:latest",
+                "model_export": f"{config['modeling']['export_artifact']}:prod_training",
                 "test_data": "data_test.csv:latest"
             },
         )

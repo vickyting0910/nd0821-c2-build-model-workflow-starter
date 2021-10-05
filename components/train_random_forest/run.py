@@ -158,7 +158,7 @@ def get_training_inference_pipeline(args):
     # Categorical preprocessing pipeline
     categorical_features = sorted(model_config["features"]["categorical"])
     non_ordinal_categorical_preproc = make_pipeline(
-        SimpleImputer(strategy="constant", fill_value=0), OneHotEncoder()
+        SimpleImputer(strategy="most_frequent"), OneHotEncoder()
     )
     # Numerical preprocessing pipeline
     numeric_features = sorted(model_config["features"]["numerical"])
